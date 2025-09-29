@@ -1,10 +1,36 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";  // ES6 import for the User model
+import User from "../models/User.js";  
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
+dotenv.config();
+
 
 // Register User
 
+
+
+
+// Create a reusable transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Verify transporter configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP Transporter Error:', error);
+  } else {
+    console.log('SMTP Transporter Ready');
+  }
+});
+
+// Register User
 export const registerUser = async (req, res) => {
   const { username, email, password, accountType, firstName, lastName, referralName, hearAbout, licenseNumber, businessNumber, licensedState, zipCode, joinSociety = false } = req.body;
 
@@ -18,11 +44,10 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Create new user (rely on pre-save hook for hashing)
     const newUser = new User({
       username,
       email,
-      password, // Pass plain text password
+      password,
       accountType,
       firstName,
       lastName,
@@ -39,16 +64,51 @@ export const registerUser = async (req, res) => {
 
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+    try {
+      console.log(`Attempting to send email to ${email} using Gmail SMTP`);
+      const mailOptions = {
+        from: `"Your App" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Welcome to Our Store! Account Created Successfully",
+        text: `Hello ${firstName} ${lastName} ,
+
+Welcome to Our Store! Your account has been created successfully.
+
+Account Details:
+- Email: ${email}
+- Username: ${username}
+- Account Type: ${accountType}
+
+If you have any questions, reply to this email.
+
+Best regards,
+Md. Manowar Hossain`,
+        html: `<h1>Hello ${firstName} ${lastName} (${username})!</h1>
+               <h3>Welcome to our app! Your account has been created successfully.</h3>
+               <ul>
+                 <li><strong>Email:</strong> ${email}</li>
+                 <li><strong>Username:</strong> ${username}</li>
+                 <li><strong>Account Type:</strong> ${accountType}</li>
+               </ul>
+               <p>If you have any questions, reply to this email.</p>
+               <p>Best regards,<br>Md. Manowar Hossain</p>`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log(`Welcome email sent to ${email}`);
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError);
+    }
+
     res.status(201).json({
       message: 'User registered successfully',
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // Login User
 
 export const loginUser = async (req, res) => {
@@ -97,6 +157,15 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deleteAllUsers = async (req, res) => {
+  try {
+    const result = await User.deleteMany({});
+    res.status(200).json({ message: "All users deleted successfully", result });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
