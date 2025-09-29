@@ -118,8 +118,7 @@ Md. Manowar Hossain`,
                  <li><strong>Account Type:</strong> ${accountType}</li>
                </ul>
                <p>If you have any questions, reply to this email.</p>
-               <p>Best regards,<br>Md. Manowar Hossain</p>
-               <p>Devloper</p>`,
+               <p>Best regards,<br>Md. Manowar Hossain</p>`,
       };
 
       await transporter.sendMail(mailOptions);

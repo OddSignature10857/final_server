@@ -13,7 +13,7 @@ app.use(cors());
 
 app.use(express.json());
 
- const dbUrl = process.env.DB_URL || 'mongodb+srv://workspace2000official_db_user:LS6VN3H8vyeE8ga0@custommatt.md8xkma.mongodb.net/?retryWrites=true&w=majority&appName=custommatt';
+ const dbUrl = process.env.DB_URL;
 
 // const dbUrl = process.env.DB_URL;
 
