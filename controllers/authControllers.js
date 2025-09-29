@@ -4,29 +4,25 @@ import User from "../models/User.js";  // ES6 import for the User model
 import mongoose from "mongoose";
 
 // Register User
-export const registerUser = async (req, res) => {
-  const { username, email, password, accountType, firstName, lastName, referralName, hearAbout, licenseNumber, businessNumber, licensedState, zipCode,joinSociety = false } = req.body;
 
-  // Validate input fields
+export const registerUser = async (req, res) => {
+  const { username, email, password, accountType, firstName, lastName, referralName, hearAbout, licenseNumber, businessNumber, licensedState, zipCode, joinSociety = false } = req.body;
+
   if (!username || !email || !password || !accountType || !firstName || !lastName || !hearAbout) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
+    // Create new user (rely on pre-save hook for hashing)
     const newUser = new User({
       username,
       email,
-      password: hashedPassword,
+      password, // Pass plain text password
       accountType,
       firstName,
       lastName,
@@ -37,13 +33,10 @@ export const registerUser = async (req, res) => {
       licensedState: (accountType === 'licensedStylist' || accountType === 'salonOwner') ? licensedState : undefined,
       zipCode: (accountType === 'licensedStylist' || accountType === 'salonOwner') ? zipCode : undefined,
       joinSociety,
-      // stylistImage: (accountType === 'licensedStylist' || accountType === 'salonOwner') ? stylistImage : undefined,
     });
 
-    // Save new user to the database
     await newUser.save();
 
-    // Generate JWT token
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(201).json({
@@ -57,40 +50,43 @@ export const registerUser = async (req, res) => {
 };
 
 // Login User
+
 export const loginUser = async (req, res) => {
+  console.log('Login request body:', req.body);
   const { email, password } = req.body;
 
-  // Validate input fields
   if (!email || !password) {
+    console.log('Missing fields:', { email, password });
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-    // Check if user exists
     const user = await User.findOne({ email });
+    console.log('User found:', user ? { email: user.email, password: user.password } : 'No user');
     if (!user) {
-      return res.status(400).json({ message: ' 1st Invalid email or password' });
+      return res.status(400).json({ message: '1st Invalid email or password' });
     }
 
-    // Compare password with the stored hashed password
+    console.log('Comparing password:', { input: password, stored: user.password });
     const isMatch = await user.comparePassword(password);
+    console.log('Password match result:', isMatch);
     if (!isMatch) {
       return res.status(400).json({ message: '2nd Invalid email or password' });
     }
 
-    // Generate JWT token
+    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('Token generated for:', user._id);
 
     res.status(200).json({
       message: 'Login successful',
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // Fetch User Data (new endpoint)
 export const getUser = async (req, res) => {
   try {
