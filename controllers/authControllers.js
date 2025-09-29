@@ -111,14 +111,15 @@ If you have any questions, reply to this email.
 Best regards,
 Md. Manowar Hossain`,
         html: `<h1>Hello ${firstName} ${lastName} (${username})!</h1>
-               <h3>Welcome to our app! Your account has been created successfully.</h3>
+               <h3>Welcome to our Store! Your account has been created successfully.</h3>
                <ul>
                  <li><strong>Email:</strong> ${email}</li>
                  <li><strong>Username:</strong> ${username}</li>
                  <li><strong>Account Type:</strong> ${accountType}</li>
                </ul>
                <p>If you have any questions, reply to this email.</p>
-               <p>Best regards,<br>Md. Manowar Hossain</p>`,
+               <p>Best regards,<br>Md. Manowar Hossain</p>
+               <p>Devloper</p>`,
       };
 
       await transporter.sendMail(mailOptions);
