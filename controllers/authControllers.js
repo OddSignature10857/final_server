@@ -67,7 +67,7 @@ export const registerUser = async (req, res) => {
     try {
       console.log(`Attempting to send email to ${email} using Gmail SMTP`);
       const mailOptions = {
-        from: `"Your App" <${process.env.EMAIL_USER}>`,
+        from: `"Our Store" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Welcome to Our Store! Account Created Successfully",
         text: `Hello ${firstName} ${lastName} ,
