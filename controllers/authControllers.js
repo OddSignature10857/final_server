@@ -109,7 +109,7 @@ Account Details:
 If you have any questions, reply to this email.
 
 Best regards,
-Md. Manowar Hossain`,
+Matt`,
         html: `<h1>Hello ${firstName} ${lastName} (${username})!</h1>
                <h3>Welcome to our Store! Your account has been created successfully.</h3>
                <ul>
@@ -118,7 +118,7 @@ Md. Manowar Hossain`,
                  <li><strong>Account Type:</strong> ${accountType}</li>
                </ul>
                <p>If you have any questions, reply to this email.</p>
-               <p>Best regards,<br>Md. Manowar Hossain</p>`,
+               <p>Best regards,<br>Matt</p>`,
       };
 
       await transporter.sendMail(mailOptions);
