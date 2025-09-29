@@ -56,34 +56,27 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    console.log('Missing fields:', { email, password });
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
     const user = await User.findOne({ email });
-    console.log('User found:', user ? { email: user.email, password: user.password } : 'No user');
     if (!user) {
       return res.status(400).json({ message: '1st Invalid email or password' });
     }
 
-    console.log('Comparing password:', { input: password, stored: user.password });
     const isMatch = await user.comparePassword(password);
-    console.log('Password match result:', isMatch);
     if (!isMatch) {
       return res.status(400).json({ message: '2nd Invalid email or password' });
     }
 
-    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    console.log('Token generated for:', user._id);
 
     res.status(200).json({
       message: 'Login successful',
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -96,7 +89,6 @@ export const getUser = async (req, res) => {
     }
     res.status(200).json({ user });
   } catch (error) {
-    console.error("Error fetching user data:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -106,7 +98,6 @@ export const getAllUsers = async (req, res) => {
     const users = await User.find();
     res.status(200).json({ users });
   } catch (error) {
-    console.error("Error fetching all users:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
